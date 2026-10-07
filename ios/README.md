@@ -1,0 +1,35 @@
+# Smart Skin Care for iPhone
+
+`SmartSkinCare.xcodeproj` contains an iOS 17 SwiftUI application with account login/registration, scan history, analysis, comparison, deletion, editable routines and the saved assistant conversation. The API URL is configurable in the sign-in screen. Authentication uses the backend cookie session and refresh flow.
+
+## Open and build on macOS
+
+Open `SmartSkinCare.xcodeproj` in Xcode. Select the SmartSkinCare scheme, choose your signing team and a simulator or iPhone. The bundle identifier defaults to `com.smartskincare.app`; change it for your signing setup.
+
+A simulator build can be checked with:
+
+```sh
+xcodebuild -project SmartSkinCare.xcodeproj -scheme SmartSkinCare -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+```
+
+Start the existing FastAPI backend. `http://localhost:8000` works for a simulator on the backend's Mac; a physical phone needs a reachable API address. Use HTTPS for a remote service. Local-network permission and local networking transport configuration are included; arbitrary insecure remote transport is not enabled.
+
+## Capture
+
+The app guides three front-camera photos (front, left and right), checks one visible face, lighting and pose through Vision, and asks consent before uploading. TrueDepth capture uses AVFoundation depth delivery on supported devices and reports a local distance estimate. Depth maps are not embedded in uploaded JPEGs or sent to the API; current server indicators analyze RGB photos. This is not a 3D skin assessment. Ordinary camera capture remains available on devices without TrueDepth.
+
+Camera acquisition requires a real iPhone. Before distribution, compile with the iOS SDK and verify permissions, interruption/background handling, three-angle capture, depth availability and delivery, account refresh, upload/analysis, routines, chat and deletion on devices. Capture thresholds are initial heuristics and need device validation. Estimates and comparisons are not diagnoses; simulated metrics are excluded from displayed measured comparisons.
+
+## Verification performed here
+
+All 11 Swift files pass syntax parsing. The generated project references, shared scheme, Info.plist and privacy manifest pass structural checks. This Windows environment cannot perform Swift/iOS type checking, SDK compilation, signing or camera/TrueDepth device tests; these remain unverified.
+
+To regenerate and inspect the project using Python:
+
+```sh
+python tools/generate_project.py
+python -m pip install -r tools/requirements.txt
+python tools/verify_sources.py
+```
+
+The privacy manifest declares application functionality data and the UserDefaults access reason. Review declarations against the final distributed app and services before submission. Camera/depth implementation references: [Apple depth capture documentation](https://developer.apple.com/documentation/avfoundation/capturing-photos-with-depth).

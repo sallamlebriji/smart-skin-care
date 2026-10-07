@@ -1,0 +1,123 @@
+.capture-showcase__fan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: -20px;
+  position: relative;
+  padding: 20px 0 40px;
+}
+
+.device--side {
+  margin: 0 -26px;
+  transform: translateY(20px) rotate(-8deg);
+  z-index: 1;
+  opacity: 0.92;
+}
+
+.device--right {
+  transform: translateY(20px) rotate(8deg);
+}
+
+.device--center {
+  z-index: 2;
+  transform: scale(1.08);
+}
+
+.device__photo,
+.device__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.device__photo {
+  object-position: center 25%;
+}
+
+.device__center-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 14px 22px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15), transparent 40%, rgba(0, 0, 0, 0.55));
+}
+
+.device__sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--rose-deep);
+  box-shadow: 0 0 6px 1px rgba(91, 79, 214, 0.5);
+}
+
+.device__tags {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.device__tag {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rose-deep);
+}
+
+.device__ring-wrap {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  margin-top: 40px;
+  display: grid;
+  place-items: center;
+}
+
+.device__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed var(--rose);
+  opacity: 0.8;
+}
+
+.device__caption {
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 160px;
+}
+
+@media (max-width: 640px) {
+  .device {
+    width: 128px;
+  }
+
+  .device--side {
+    margin: 0 -18px;
+  }
+
+  .device__caption {
+    font-size: 11px;
+    max-width: 120px;
+  }
+
+  .device__ring-wrap {
+    width: 76px;
+    height: 76px;
+  }
+
+}

@@ -1,0 +1,41 @@
+.experts__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.expert-card {
+  padding: 28px 22px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.expert-card__avatar {
+  display: block;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 25%;
+  border: 3px solid var(--surface);
+  box-shadow: var(--shadow-tight);
+}
+
+.expert-card strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.expert-card p {
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .experts__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

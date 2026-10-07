@@ -1,0 +1,45 @@
+// !$*UTF8*$!
+{
+archiveVersion = 1; classes = {}; objectVersion = 56;
+objects = {
+D2C4ADC2554C2341115762A0 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "NativeViews.swift"; path = "SmartSkinCare/App/NativeViews.swift"; sourceTree = "<group>"; };
+8DEAE14A1B6B220C3299CF7F = { isa = PBXBuildFile; fileRef = D2C4ADC2554C2341115762A0; };
+164193A8E573D9AB2CFA50E8 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "NativeWorkspace.swift"; path = "SmartSkinCare/App/NativeWorkspace.swift"; sourceTree = "<group>"; };
+258AAA9776469D37891A7590 = { isa = PBXBuildFile; fileRef = 164193A8E573D9AB2CFA50E8; };
+B3B78483629CA929054B53BA = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SmartSkinCareApp.swift"; path = "SmartSkinCare/App/SmartSkinCareApp.swift"; sourceTree = "<group>"; };
+885C0F0B364836F902F075FA = { isa = PBXBuildFile; fileRef = B3B78483629CA929054B53BA; };
+4E6FC2CBFE5957E6F067544F = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FaceScanResult.swift"; path = "SmartSkinCare/Models/FaceScanResult.swift"; sourceTree = "<group>"; };
+1EA8B3E340BA1418881A9F3C = { isa = PBXBuildFile; fileRef = 4E6FC2CBFE5957E6F067544F; };
+DFC1FA43E1CFDE432A9934EA = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "APIClient.swift"; path = "SmartSkinCare/Network/APIClient.swift"; sourceTree = "<group>"; };
+9A59F4E2FB864949109F5126 = { isa = PBXBuildFile; fileRef = DFC1FA43E1CFDE432A9934EA; };
+41A95ACE66BED0651352337D = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CameraFaceScanProvider.swift"; path = "SmartSkinCare/Scan/CameraFaceScanProvider.swift"; sourceTree = "<group>"; };
+A62BC416454755E1FA4977A7 = { isa = PBXBuildFile; fileRef = 41A95ACE66BED0651352337D; };
+56DD07C18591080A82925928 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CameraPreview.swift"; path = "SmartSkinCare/Scan/CameraPreview.swift"; sourceTree = "<group>"; };
+442360D4A9B3BC50675B3176 = { isa = PBXBuildFile; fileRef = 56DD07C18591080A82925928; };
+3DF9C46B4FC9C342090D7738 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FaceScanProvider.swift"; path = "SmartSkinCare/Scan/FaceScanProvider.swift"; sourceTree = "<group>"; };
+53A076CE03B286A5D80E19E0 = { isa = PBXBuildFile; fileRef = 3DF9C46B4FC9C342090D7738; };
+9B63992FF041EA1B590D3245 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "NativeScanView.swift"; path = "SmartSkinCare/Scan/NativeScanView.swift"; sourceTree = "<group>"; };
+C4DED234A36527EA4F2BBA6B = { isa = PBXBuildFile; fileRef = 9B63992FF041EA1B590D3245; };
+CFA5FDAFD7E01579779D91F0 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PhotoAnalysis.swift"; path = "SmartSkinCare/Scan/PhotoAnalysis.swift"; sourceTree = "<group>"; };
+0468CE889C861DBCF792D708 = { isa = PBXBuildFile; fileRef = CFA5FDAFD7E01579779D91F0; };
+7E60E8F0CE75ABCA5D85B591 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "TrueDepthFaceScanProvider.swift"; path = "SmartSkinCare/TrueDepth/TrueDepthFaceScanProvider.swift"; sourceTree = "<group>"; };
+5630D1107600AB7E54125365 = { isa = PBXBuildFile; fileRef = 7E60E8F0CE75ABCA5D85B591; };
+96ED5C5789B174A01557791C = { isa = PBXFileReference; lastKnownFileType = text.xml; path = SmartSkinCare/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+59BD0A3FF43B32849B319E64 = { isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = SmartSkinCare/Info.plist; sourceTree = "<group>"; };
+38A007151ABE87CC01A5B6E9 = { isa = PBXFileReference; explicitFileType = wrapper.application; path = SmartSkinCare.app; sourceTree = BUILT_PRODUCTS_DIR; };
+FBDC4F23F93125BBEEAE800C = { isa = PBXGroup; children = (38A007151ABE87CC01A5B6E9,); name = Products; sourceTree = "<group>"; };
+64292B1C2B2E13EAD8788FC8 = { isa = PBXGroup; children = (D2C4ADC2554C2341115762A0, 164193A8E573D9AB2CFA50E8, B3B78483629CA929054B53BA, 4E6FC2CBFE5957E6F067544F, DFC1FA43E1CFDE432A9934EA, 41A95ACE66BED0651352337D, 56DD07C18591080A82925928, 3DF9C46B4FC9C342090D7738, 9B63992FF041EA1B590D3245, CFA5FDAFD7E01579779D91F0, 7E60E8F0CE75ABCA5D85B591, 96ED5C5789B174A01557791C, 59BD0A3FF43B32849B319E64, FBDC4F23F93125BBEEAE800C,); sourceTree = "<group>"; };
+BCE16DD0260827ECF338C787 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (8DEAE14A1B6B220C3299CF7F, 258AAA9776469D37891A7590, 885C0F0B364836F902F075FA, 1EA8B3E340BA1418881A9F3C, 9A59F4E2FB864949109F5126, A62BC416454755E1FA4977A7, 442360D4A9B3BC50675B3176, 53A076CE03B286A5D80E19E0, C4DED234A36527EA4F2BBA6B, 0468CE889C861DBCF792D708, 5630D1107600AB7E54125365,); runOnlyForDeploymentPostprocessing = 0; };
+7561BFB015D8F536760CB671 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+A39309C4376B4D66A5739C05 = { isa = PBXBuildFile; fileRef = 96ED5C5789B174A01557791C; };
+0189424A5A60FED329FA868E = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A39309C4376B4D66A5739C05,); runOnlyForDeploymentPostprocessing = 0; };
+AB52CB08E0FDF02BF6C67C33 = { isa = XCBuildConfiguration; buildSettings = { SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; CLANG_ENABLE_MODULES = YES; }; name = Debug; };
+59E1BEE911F66DA37FEBACDC = { isa = XCBuildConfiguration; buildSettings = { PRODUCT_BUNDLE_IDENTIFIER = com.smartskincare.app; PRODUCT_NAME = "$(TARGET_NAME)"; INFOPLIST_FILE = SmartSkinCare/Info.plist; GENERATE_INFOPLIST_FILE = NO; SWIFT_VERSION = 5.0; SWIFT_STRICT_CONCURRENCY = minimal; CODE_SIGN_STYLE = Automatic; TARGETED_DEVICE_FAMILY = 1; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; DEBUG_INFORMATION_FORMAT = dwarf; }; name = Debug; };
+5283471FF90C511CFE244FFF = { isa = XCBuildConfiguration; buildSettings = { SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; CLANG_ENABLE_MODULES = YES; }; name = Release; };
+F4C425279CD5DDD18FD6DC6D = { isa = XCBuildConfiguration; buildSettings = { PRODUCT_BUNDLE_IDENTIFIER = com.smartskincare.app; PRODUCT_NAME = "$(TARGET_NAME)"; INFOPLIST_FILE = SmartSkinCare/Info.plist; GENERATE_INFOPLIST_FILE = NO; SWIFT_VERSION = 5.0; SWIFT_STRICT_CONCURRENCY = minimal; CODE_SIGN_STYLE = Automatic; TARGETED_DEVICE_FAMILY = 1; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OPTIMIZATION_LEVEL = "-O"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; }; name = Release; };
+6650A2B5E24FA7522CE6B81C = { isa = XCConfigurationList; buildConfigurations = (AB52CB08E0FDF02BF6C67C33, 5283471FF90C511CFE244FFF,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+7DE97F2CECB2601227982F09 = { isa = XCConfigurationList; buildConfigurations = (59E1BEE911F66DA37FEBACDC, F4C425279CD5DDD18FD6DC6D,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+0E8A3AD980EC179856012B7E = { isa = PBXNativeTarget; buildConfigurationList = 7DE97F2CECB2601227982F09; buildPhases = (BCE16DD0260827ECF338C787, 7561BFB015D8F536760CB671, 0189424A5A60FED329FA868E,); buildRules = (); dependencies = (); name = SmartSkinCare; productName = SmartSkinCare; productReference = 38A007151ABE87CC01A5B6E9; productType = "com.apple.product-type.application"; };
+98F54143AB4E86B28C3AFEE0 = { isa = PBXProject; attributes = { LastUpgradeCheck = 1600; }; buildConfigurationList = 6650A2B5E24FA7522CE6B81C; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = 64292B1C2B2E13EAD8788FC8; productRefGroup = FBDC4F23F93125BBEEAE800C; projectDirPath = ""; projectRoot = ""; targets = (0E8A3AD980EC179856012B7E,); };
+}; rootObject = 98F54143AB4E86B28C3AFEE0;
+}
