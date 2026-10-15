@@ -26,6 +26,22 @@ All 11 Swift files pass syntax parsing, and project references, the scheme and p
 
 [Successful web, backend and iOS verification](https://github.com/sallamlebriji/smart-skin-care/actions/runs/38726050716). The workflow runs automatically on pushes and pull requests.
 
+## Simulator startup verified
+
+The native app was also installed and launched in an **iPhone SE (3rd generation), iOS 26.2** simulator on a GitHub macOS runner. The rendered sign-in screen was captured and visually inspected. API logs show the initial `/api/auth/me` and refresh calls reaching the isolated backend; the expected 401 responses leave the app on the sign-in screen without a connection error.
+
+[Simulator startup run](https://github.com/sallamlebriji/smart-skin-care/actions/runs/38738788051) — download the `ios-simulator-smoke` artifact for the screenshot, device information, launch output and API log. Artifacts are retained for seven days.
+
+This is a startup smoke test, not an automated UI interaction suite. Registration, login, routines and chat interactions were not exercised by this simulator run. Physical camera/TrueDepth behavior remains unverified.
+
+Windows does not provide Apple's native iOS simulator. The actual simulator runs on the macOS CI host. On a Mac, build from the repository root with the CI build command, start the backend on port 8000, then run:
+
+```sh
+python ios/tools/simulator_smoke.py
+```
+
+The script selects an available iPhone, boots it, installs the built app, launches it and saves a screenshot under `build/simulator-smoke/`. Reference: [Apple's simulator documentation](https://help.apple.com/xcode/mac/current/en.lproj/devfd9e28378.html).
+
 To regenerate and inspect the project using Python:
 
 ```sh
