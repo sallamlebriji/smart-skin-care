@@ -31,7 +31,7 @@ struct NativeAccountView: View {
                     Section("Signed in") { Text(account.email); Button("Sign out", role: .destructive) { Task { await workspace.signOut() } } }
                 } else {
                     Section(register ? "Create account" : "Sign in") {
-                        TextField("Email", text: $email).keyboardType(.emailAddress).textContentType(.email).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        TextField("Email", text: $email).keyboardType(.emailAddress).textContentType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
                         SecureField("Password (8+ characters)", text: $password).textContentType(register ? .newPassword : .password)
                         Button(register ? "Create account" : "Sign in") {
                             Task { await workspace.authenticate(email: email, password: password, register: register); if workspace.account != nil { password = "" } }
