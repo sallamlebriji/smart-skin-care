@@ -1,6 +1,7 @@
 """Train a small CPU-friendly experimental 4-class wrinkle appearance model.
 
-Requires real human annotations. Never derives severity from age or probabilities.
+Requires explicit annotations. AI-preannotated pilots are research-only and must be declared.
+Never derives severity from age or probabilities.
 Run from backend/: python training/train_severity.py --annotations data/wrinkle_training/annotations.csv
 """
 import argparse
@@ -27,7 +28,7 @@ def read_annotations(path):
     counts = {split: {label: 0 for label in LABELS} for split in SPLITS}
     for row in rows:
         if row.get("label") not in LABELS or row.get("split") not in SPLITS or not row.get("subject_id", "").strip() or not row.get("annotator", "").strip():
-            raise ValueError("Human severity label, subject_id, annotator and train/val/test split are required for EVERY row; blank labels cannot train a severity model")
+            raise ValueError("Severity label, subject_id, annotator and train/val/test split are required for EVERY row; blank labels cannot train a severity model")
         image = (path.parent / row["file"]).resolve()
         if not image.is_relative_to(path.parent) or not image.is_file():
             raise ValueError("Image must exist within the dataset directory")
@@ -58,10 +59,17 @@ def main():
     parser.add_argument("--output", default="data/wrinkle_training/artifacts")
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--annotation-origin", choices=["human_reviewed", "ai_visual_provisional"], default="human_reviewed")
+    parser.add_argument("--grouping", choices=["verified_subjects", "source_image_only"], default="verified_subjects")
+    parser.add_argument("--dataset-source", default="operator-supplied annotations; inspect CSV provenance")
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1:
         parser.error("epochs and batch size must be positive")
     rows, counts = read_annotations(args.annotations)
+    if any(row["annotator"].startswith("ai:") for row in rows) and args.annotation_origin != "ai_visual_provisional":
+        parser.error("AI-prefixed annotations require --annotation-origin ai_visual_provisional")
+    if args.annotation_origin == "ai_visual_provisional" or args.grouping == "source_image_only":
+        print("RESEARCH PILOT ONLY: labels are not an independent clinical reference; subject independence is not established.", flush=True)
     import torch
     from torch import nn
     from torch.utils.data import Dataset, DataLoader
@@ -117,7 +125,11 @@ def main():
     with torch.inference_mode(): expected = model(torch.from_numpy(probe)).numpy()
     actual = ort.InferenceSession(str(output / "severity.onnx"), providers=["CPUExecutionProvider"]).run(None, {"image": probe})[0]
     np.testing.assert_allclose(actual, expected, rtol=1e-4, atol=1e-5)
+    majority = max(counts["train"], key=counts["train"].get)
     report = {"labels": LABELS, "counts": counts, "seed": 42, "validation_history": history, "held_out_test": test,
+              "majority_baseline_test_accuracy": counts["test"][majority] / sum(counts["test"].values()),
+              "annotation_origin": args.annotation_origin, "subject_grouping": args.grouping,
+              "dataset_source": args.dataset_source, "intended_use": "research_only",
               "dataset_sha256": hashlib.sha256(Path(args.annotations).read_bytes()).hexdigest(),
               "input": {"shape": [1, 3, 128, 128], "rgb": True, "scaling": "divide by 255", "resize": "stretch"},
               "experimental": True, "clinical_validation": False, "automatically_activated": False}

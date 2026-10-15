@@ -66,6 +66,6 @@ Design tokens: `src/index.css`. Shared result contract: `src/types/skin.ts` and 
 
 ## Automated verification
 
-Local wrinkle severity training: [dataset preparation, annotation tool and CPU training guide](backend/training/README.md). The downloaded image pool has no severity labels; human annotation is required before a severity model can be trained. The existing binary detector remains available.
+Local wrinkle severity training: [dataset preparation, annotation tool and CPU training guide](backend/training/README.md). An experimental four-class pilot uses explicitly provisional AI visual annotations. Human review and independent validation are still required; the existing binary detector remains the application model.
 
 [GitHub Actions](https://github.com/sallamlebriji/smart-skin-care/actions) builds the web app, runs backend tests (including the synthetic ONNX graph integration) and compiles the iOS simulator app on macOS. All three jobs passed for commit `dff2f65`: [verified run](https://github.com/sallamlebriji/smart-skin-care/actions/runs/38726050716). CI does not establish model accuracy or replace real camera/TrueDepth device testing. The real acne checkpoint was also executed locally through upload, analysis and deletion using a synthetic image.

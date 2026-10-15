@@ -40,3 +40,14 @@ def test_training_rejects_invalid_or_leaking_annotations(tmp_path, fault):
     if fault == "tampered": rows[0]["sha256"] = "0" * 64
     if fault == "missing_class": rows = [r for r in rows if not (r["split"] == "test" and r["label"] == "marked")]
     with pytest.raises(ValueError): read_annotations(write(tmp_path, rows))
+
+
+def test_ai_labels_cannot_be_reported_as_human_reviewed(tmp_path, monkeypatch):
+    from training.train_severity import main
+    rows = dataset(tmp_path)
+    rows[0]["annotator"] = "ai:visual-provisional"
+    path = write(tmp_path, rows)
+    monkeypatch.setattr("sys.argv", ["train_severity.py", "--annotations", str(path)])
+    with pytest.raises(SystemExit) as error:
+        main()
+    assert error.value.code == 2
