@@ -8,6 +8,7 @@ class CameraFaceScanProvider: NSObject, FaceScanProvider, AVCapturePhotoCaptureD
     private let output = AVCapturePhotoOutput()
     private var configured = false
     private var pending: CheckedContinuation<NativePhoto, Error>?
+    private var pendingID: Int64?
     init(mode: CaptureMode = .camera) { self.mode = mode; super.init() }
     var isAvailable: Bool { device != nil }
     private var device: AVCaptureDevice? {
@@ -39,7 +40,11 @@ class CameraFaceScanProvider: NSObject, FaceScanProvider, AVCapturePhotoCaptureD
                                 self.output.isDepthDataDeliveryEnabled = true
                             }
                             self.session.commitConfiguration(); self.configured = true
-                        } catch { self.session.commitConfiguration(); throw error }
+                        } catch {
+                            for input in self.session.inputs { self.session.removeInput(input) }
+                            for output in self.session.outputs { self.session.removeOutput(output) }
+                            self.session.commitConfiguration(); throw error
+                        }
                     }
                     if !self.session.isRunning { self.session.startRunning() }
                     continuation.resume()
@@ -55,6 +60,7 @@ class CameraFaceScanProvider: NSObject, FaceScanProvider, AVCapturePhotoCaptureD
                 }
                 self.pending = continuation
                 let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
+                self.pendingID = settings.uniqueID
                 if self.mode == .trueDepth {
                     settings.isDepthDataDeliveryEnabled = self.output.isDepthDataDeliveryEnabled
                     settings.embedsDepthDataInPhoto = false
@@ -66,8 +72,8 @@ class CameraFaceScanProvider: NSObject, FaceScanProvider, AVCapturePhotoCaptureD
     }
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         queue.async {
-            guard let continuation = self.pending else { return }
-            self.pending = nil
+            guard self.pendingID == photo.resolvedSettings.uniqueID, let continuation = self.pending else { return }
+            self.pending = nil; self.pendingID = nil
             if let error = error { continuation.resume(throwing: error); return }
             do { continuation.resume(returning: try PhotoAnalysis.analyze(photo)) }
             catch { continuation.resume(throwing: error) }
@@ -75,11 +81,14 @@ class CameraFaceScanProvider: NSObject, FaceScanProvider, AVCapturePhotoCaptureD
     }
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
         guard let error = error else { return }
-        queue.async { self.pending?.resume(throwing: error); self.pending = nil }
+        queue.async {
+            guard self.pendingID == resolvedSettings.uniqueID else { return }
+            self.pending?.resume(throwing: error); self.pending = nil; self.pendingID = nil
+        }
     }
     func stop() {
         queue.async {
-            self.pending?.resume(throwing: CancellationError()); self.pending = nil
+            self.pending?.resume(throwing: CancellationError()); self.pending = nil; self.pendingID = nil
             if self.session.isRunning { self.session.stopRunning() }
         }
     }

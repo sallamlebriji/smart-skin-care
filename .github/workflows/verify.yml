@@ -30,6 +30,7 @@ jobs:
           python-version: '3.13'
           cache: pip
           cache-dependency-path: backend/requirements*.txt
+      - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: python -m pip install -r requirements-dev.txt -r requirements-models.txt onnx
         working-directory: backend
       - run: python -m pytest tests -q
