@@ -1,7 +1,7 @@
 """
 Runs every registered model over a face crop and assembles the shared
-SkinScanResult shape (spec §13). NOT wired to a live API route in Phase 1 —
-there is no real face detection / alignment upstream of it yet (Phase 4).
+SkinScanResult shape. Invoked by the scan analysis API; capture guidance
+and face positioning are currently performed by the client.
 """
 
 import numpy as np

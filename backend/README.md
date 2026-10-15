@@ -49,3 +49,14 @@ Each entry declares an indicator, `trained: true`, relative `.onnx` file, SHA-25
 A configured model replaces only its indicator's placeholder (or the default acne checkpoint). Invalid configuration or failed inference returns 503 rather than fabricated results. Without a registry the default acne classifier and explicitly simulated indicators retain their existing behavior. No seven additional trained checkpoints or annotated datasets are bundled.
 
 The registry tests include an actual ONNX Runtime execution of a small synthetic graph, which only checks integration. Install `onnx` alongside `requirements-models.txt` to run that optional graph test; it is skipped when either package is unavailable. Reference: [ONNX Runtime Python API](https://onnxruntime.ai/docs/api/python/api_summary.html).
+
+
+## Verify the real acne model locally
+
+After installing `requirements-dev.txt`, run from `backend/`:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/check_model.py
+```
+
+The first run downloads the pinned community checkpoint, then performs CPU inference on a synthetic RGB image. A successful result checks loading and execution only, not accuracy. Supply a local photo path as an optional argument; the script processes it locally and does not store or upload it. Checkpoint weights remain in the local Hugging Face cache and are not committed. The model revision is fixed in `app/ai/acne_model.py`, and only safetensors weights with remote code disabled are loaded. The application still requires separately trained, validated checkpoints for its other seven indicators.

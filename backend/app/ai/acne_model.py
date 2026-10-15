@@ -23,6 +23,7 @@ import numpy as np
 from PIL import Image
 
 MODEL_ID = "imfarzanansari/skintelligent-acne"
+MODEL_REVISION = "f6ac6218b590f518d0a831472c7528b12bd53ae2"
 
 # Higher = clearer skin, matching every other (mock) metric's score direction.
 _LABEL_TO_SCORE = {
@@ -44,7 +45,7 @@ def _get_pipeline():
             if _pipe is None:
                 from transformers import pipeline
 
-                _pipe = pipeline("image-classification", model=MODEL_ID)
+                _pipe = pipeline("image-classification", model=MODEL_ID, revision=MODEL_REVISION, trust_remote_code=False, model_kwargs={"use_safetensors": True})
     return _pipe
 
 

@@ -1,6 +1,6 @@
 """
-Scan capture (Phase 3) and analysis (Phase 5) endpoints. No auth or DB yet
-(Phase 9): scans are addressed by an unguessable id.
+Scan capture and analysis endpoints. Account scans enforce ownership;
+guest scans are addressed by an unguessable id.
 """
 
 import json
@@ -148,8 +148,8 @@ _CONTENT_TYPE = {"jpg": "image/jpeg", "png": "image/png", "webp": "image/webp"}
 def get_scan_image(scan_id: str, angle: Literal["front", "left", "right"], user: OptionalUser) -> Response:
     """
     Serves a stored capture by scan id + angle (spec: the dashboard needs the
-    actual photo, not just the JSON meta). No auth yet (Phase 9) — same trust
-    model as GET /api/scans/{id}: the scan id itself is the unguessable secret.
+    actual photo, not just the JSON meta). Account ownership is checked;
+    guest scans use the scan id as an unguessable secret.
     """
     meta = accessible_meta(scan_id, user)
     filename = meta.get("images", {}).get(angle)

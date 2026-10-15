@@ -25,7 +25,7 @@ export default function ScanResultPanel({ result }: { result: SkinScanResult }) 
         <p style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--ink-faint)" }}>
           Scan analysis
         </p>
-        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-deep)" }}>{result.overall_score.toFixed(0)}/100</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-deep)" }}>{result.mock_metrics.length ? "Partial analysis" : `${result.overall_score.toFixed(0)}/100`}</span>
       </div>
       <p style={{ fontSize: 12.5, color: "var(--ink-faint)", marginBottom: 16 }}>
         Visual, camera-derived indicators — not a medical diagnosis. Metrics marked{" "}
@@ -76,8 +76,9 @@ export default function ScanResultPanel({ result }: { result: SkinScanResult }) 
       </div>
 
       <p style={{ fontSize: 11.5, color: "var(--ink-faint)", marginTop: 16, lineHeight: 1.5 }}>
-        Acne is scored by a public, MIT-licensed community model (not independently clinically
-        validated). Every other metric above is still a placeholder until its own model is trained.
+        Indicators without a placeholder label come from a configured model or the community acne
+        checkpoint. This does not establish clinical validation. Higher scores mean clearer appearance;
+        placeholder values are illustrative and should not guide your care.
       </p>
     </div>
   );
