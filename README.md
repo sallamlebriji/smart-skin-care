@@ -59,6 +59,11 @@ Copy `backend/.env.example` to `backend/.env`, then run `docker compose up --bui
 
 Only the acne indicator currently uses a trained model, a community checkpoint with no clinical validation established here. The seven other indicators remain explicitly simulated until trained ONNX checkpoints are configured. The registry validates checksums, preprocessing and output contracts, and `/api/models` reports availability. See backend/README.md. Overall score and skin-type estimate are not validated measurements. Comparisons and chat context exclude simulated indicators. Model loading happens on first analysis and may require network access; optional `WARM_MODEL_ON_STARTUP=true` preloads it.
 
-The native iOS/TrueDepth app now includes an Xcode project, camera capture, account history, routines and chat under `ios/`. Source syntax and project structure were checked on Windows; compilation, signing and device validation still require macOS/Xcode. See ios/README.md. Additional real indicators require suitable datasets, trained checkpoints and validation, not invented scores. The application offers visual assessments, not diagnoses.
+The native iOS/TrueDepth app now includes an Xcode project, camera capture, account history, routines and chat under `ios/`. Source syntax and project structure were checked on Windows; the iOS simulator app also compiled successfully with Xcode in GitHub Actions. Signing and camera/TrueDepth device validation still require a Mac and iPhone. See ios/README.md. Additional real indicators require suitable datasets, trained checkpoints and validation, not invented scores. The application offers visual assessments, not diagnoses.
 
 Design tokens: `src/index.css`. Shared result contract: `src/types/skin.ts` and `backend/app/schemas/scan.py`.
+
+
+## Automated verification
+
+[GitHub Actions](https://github.com/sallamlebriji/smart-skin-care/actions) builds the web app, runs backend tests (including the synthetic ONNX graph integration) and compiles the iOS simulator app on macOS. All three jobs passed for commit `dff2f65`: [verified run](https://github.com/sallamlebriji/smart-skin-care/actions/runs/38726050716). CI does not establish model accuracy or replace real camera/TrueDepth device testing. The real acne checkpoint was also executed locally through upload, analysis and deletion using a synthetic image.

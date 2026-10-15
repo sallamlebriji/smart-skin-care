@@ -20,9 +20,11 @@ The app guides three front-camera photos (front, left and right), checks one vis
 
 Camera acquisition requires a real iPhone. Before distribution, compile with the iOS SDK and verify permissions, interruption/background handling, three-angle capture, depth availability and delivery, account refresh, upload/analysis, routines, chat and deletion on devices. Capture thresholds are initial heuristics and need device validation. Estimates and comparisons are not diagnoses; simulated metrics are excluded from displayed measured comparisons.
 
-## Verification performed here
+## Verification
 
-All 11 Swift files pass syntax parsing. The generated project references, shared scheme, Info.plist and privacy manifest pass structural checks. This Windows environment cannot perform Swift/iOS type checking, SDK compilation, signing or camera/TrueDepth device tests; these remain unverified.
+All 11 Swift files pass syntax parsing, and project references, the scheme and property lists pass structural checks. The application also compiled successfully for the iOS simulator with Xcode on a macOS GitHub Actions runner (commit `dff2f65`). This verifies Swift type checking and SDK compilation. Signing, physical camera/TrueDepth behavior and device usability still require testing on an iPhone.
+
+[Successful web, backend and iOS verification](https://github.com/sallamlebriji/smart-skin-care/actions/runs/38726050716). The workflow runs automatically on pushes and pull requests.
 
 To regenerate and inspect the project using Python:
 
