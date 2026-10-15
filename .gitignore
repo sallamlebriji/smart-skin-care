@@ -37,6 +37,8 @@ backend/*.egg-info/
 ios/**/*.xcuserstate
 ios/**/xcuserdata/
 ios/**/DerivedData/
+ios/test-results/
+/build/
 
 # Private scan images (never commit)
 backend/data/

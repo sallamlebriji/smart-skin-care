@@ -38,11 +38,35 @@ jobs:
 
   ios:
     runs-on: macos-15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install API dependencies for the simulator startup check
+        run: python -m pip install fastapi 'uvicorn[standard]' pydantic-settings sqlalchemy alembic 'python-jose[cryptography]' python-multipart httpx pillow numpy
+      - name: Start isolated API on the simulator host
+        working-directory: backend
+        env:
+          DATABASE_URL: sqlite:///./data/simulator-check.db
+          SCAN_STORAGE_DIR: data/simulator-check-scans
+        run: |
+          mkdir -p ../build/simulator-smoke
+          python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../build/simulator-smoke/api.log 2>&1 &
+          python -c "import httpx,time; ok=False; exec('for _ in range(30):\n try:\n  ok=httpx.get(\"http://localhost:8000/api/health\").status_code==200\n except httpx.HTTPError: pass\n if ok: break\n time.sleep(1)'); assert ok, 'Simulator API did not start'"
       - name: Compile iOS simulator application
         run: >-
           xcodebuild -project ios/SmartSkinCare.xcodeproj
           -scheme SmartSkinCare -configuration Debug
           -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
           -derivedDataPath build/ios CODE_SIGNING_ALLOWED=NO build
+      - name: Boot iPhone simulator and launch the app
+        run: python ios/tools/simulator_smoke.py
+      - name: Upload simulator screenshot and startup logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-smoke
+          path: build/simulator-smoke/
+          retention-days: 7
