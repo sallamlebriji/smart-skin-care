@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Annoter les rides — Smart Skin Care</title>
+<style>body{font:17px system-ui;max-width:900px;margin:40px auto;padding:20px;background:#faf7f5;color:#29252b}button,input,select{font:inherit;padding:10px;margin:6px}img{max-height:450px;max-width:100%;display:block;margin:20px auto}fieldset{border:1px solid #ccc;border-radius:12px}#status{min-height:30px}small{display:block;line-height:1.5}</style>
+<h1>Annoter la sévérité visuelle des rides</h1>
+<p>Ouvrez le dossier <code>backend/data/wrinkle_training/images</code>. Les photos sont lues localement : aucun envoi réseau.</p>
+<input id="folder" type="file" webkitdirectory multiple><button id="export">Exporter les annotations CSV</button>
+<p id="status" role="status">Aucune image chargée.</p><img id="photo" alt="Photo à annoter">
+<fieldset><legend>Annotation humaine</legend>
+<label>Annotateur <input id="annotator" placeholder="Identifiant du relecteur"></label><br>
+<label>Personne <input id="subject" placeholder="Même identifiant pour la même personne"></label>
+<small>Repérez les photos de la même personne avant de répartir les données. Elles doivent toutes rester dans le même ensemble. N'utilisez pas son nom réel.</small>
+<label>Ensemble <select id="split"><option value="train">Entraînement</option><option value="val">Validation</option><option value="test">Test final</option></select></label><br>
+<label>Niveau <select id="label"><option value="">À examiner</option><option value="none">Absentes</option><option value="mild">Légères</option><option value="moderate">Modérées</option><option value="marked">Marquées</option></select></label>
+<p>Guide provisoire : légères = fines lignes discrètes ; modérées = lignes nettement visibles ; marquées = plis visuellement prononcés. Cela ne mesure pas une profondeur physique. Ne déduisez pas le niveau de l'âge.</p>
+<small>Faites définir une grille commune et relire les niveaux par une personne compétente. Pour une photo floue, obstruée ou ambiguë, laissez « À examiner ». Une annotation incertaine ne doit pas devenir une vérité d'entraînement.</small>
+<button id="previous">Précédente</button><button id="save">Enregistrer et suivante</button><button id="next">Passer</button>
+</fieldset>
+<p>Importer un CSV exporté pour reprendre : <input id="resume" type="file" accept=".csv"></p>
+<script>
+const $=id=>document.getElementById(id); let files=[],index=0,url,dirty=false;const rows=new Map();
+const fields=['file','sha256','subject_id','label','split','annotator'];
+function hash(file){return file.name.replace(/\.png$/i,'')}
+function show(){if(url)URL.revokeObjectURL(url);if(!files.length)return;const file=files[index],key=hash(file),row=rows.get(key);url=URL.createObjectURL(file);$('photo').src=url;$('subject').value=row?.subject_id||'';$('label').value=row?.label||'';$('split').value=row?.split||'train';if(row?.annotator)$('annotator').value=row.annotator;$('status').textContent=`Image ${index+1}/${files.length} · ${[...rows.values()].filter(r=>r.label).length} annotations. ${file.name}`}
+$('folder').onchange=()=>{files=[...$('folder').files].filter(f=>/^[a-f0-9]{64}\.png$/i.test(f.name)).sort((a,b)=>a.name.localeCompare(b.name));index=0;show()};
+$('previous').onclick=()=>{index=Math.max(0,index-1);show()};$('next').onclick=()=>{index=Math.min(files.length-1,index+1);show()};
+$('save').onclick=()=>{if(!files.length)return;const subject=$('subject').value.trim(),annotator=$('annotator').value.trim(),label=$('label').value,split=$('split').value;if(!subject||!annotator||!label){alert('Renseignez la personne, l’annotateur et le niveau, ou passez cette photo.');return}if([...rows.values()].some(r=>r.subject_id===subject&&r.split!==split)){alert('La même personne doit rester dans un seul ensemble.');return}const key=hash(files[index]);rows.set(key,{file:`images/${key}.png`,sha256:key,subject_id:subject,label,split,annotator});dirty=true;index=Math.min(files.length-1,index+1);show()};
+function quote(s){return '"'+String(s).replaceAll('"','""')+'"'}
+$('export').onclick=()=>{if(!rows.size)return;const csv=[fields.join(','),...[...rows.values()].map(r=>fields.map(k=>quote(r[k]||'')).join(','))].join('\r\n');const blob=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=blob;a.download='annotations-reviewed.csv';a.click();setTimeout(()=>URL.revokeObjectURL(blob),1000);dirty=false};
+function parseCSV(text){let result=[],row=[],value='',quoted=false;for(let i=0;i<text.length;i++){const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){value+='"';i++}else quoted=!quoted}else if(c===','&&!quoted){row.push(value);value=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(value);if(row.some(Boolean))result.push(row);row=[];value=''}else value+=c}if(quoted)throw Error('Guillemets non fermés');row.push(value);if(row.some(Boolean))result.push(row);return result}
+$('resume').onchange=async()=>{try{const data=parseCSV(await $('resume').files[0].text()),header=data.shift();if(!fields.every(k=>header.includes(k)))throw Error('Colonnes requises absentes');for(const values of data){const row=Object.fromEntries(header.map((key,i)=>[key,values[i]||'']));if(!/^[a-f0-9]{64}$/i.test(row.sha256))throw Error('Empreinte invalide');rows.set(row.sha256,row)}show()}catch(error){alert(error.message)}};
+window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue=''}});
+</script></html>

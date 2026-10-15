@@ -1,0 +1,4 @@
+-r requirements-dev.txt
+-r requirements-models.txt
+onnx>=1.17
+safetensors>=0.4.3
