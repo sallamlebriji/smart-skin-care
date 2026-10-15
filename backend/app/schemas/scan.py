@@ -23,6 +23,14 @@ FaceRegionId = Literal[
 SkinTypeEstimate = Literal["dry", "oily", "combination", "normal", "sensitive"]
 
 
+class WrinkleAssessment(BaseModel):
+    label: Literal["wrinkle", "non-wrinkle"]
+    wrinkle_probability: float = Field(ge=0, le=1)
+    model: str
+    revision: str
+    experimental: Literal[True] = True
+
+
 class ScanQuality(BaseModel):
     lighting: float = Field(ge=0, le=1)
     face_visibility: float = Field(ge=0, le=1)

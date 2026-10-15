@@ -42,6 +42,33 @@ def upload(client):
     return response.json()
 
 
+def test_wrinkle_detection_ownership_storage_and_failure(clients, monkeypatch):
+    from PIL import Image
+    first, second = clients
+    register(first); register(second, "two@example.com")
+    image = io.BytesIO(); Image.new("RGB", (32, 32)).save(image, format="JPEG")
+    scan = first.post("/api/scans", files={angle: ("face.jpg", image.getvalue(), "image/jpeg") for angle in ("front", "left", "right")}, data={"consent": "true"}).json()
+    scan_id = scan["scan_id"]
+    expected = {"label": "wrinkle", "wrinkle_probability": 0.8, "model": "test", "revision": "test", "experimental": True}
+    calls = []
+    def predict(pixels): calls.append(pixels.shape); return expected
+    monkeypatch.setattr(scans_module, "predict_wrinkles", predict)
+    assert second.post(f"/api/scans/{scan_id}/analyze-wrinkles").status_code == 404
+    assert not calls
+    result = first.post(f"/api/scans/{scan_id}/analyze-wrinkles")
+    assert result.status_code == 200 and result.json() == expected
+    assert calls == [(32, 32, 3)]
+    assert first.get("/api/scans").json()[0]["wrinkle_assessment"] == expected
+    assert first.get(f"/api/scans/{scan_id}").json().get("result") is None
+    def fail(pixels): raise RuntimeError("private model details")
+    monkeypatch.setattr(scans_module, "predict_wrinkles", fail)
+    failed = first.post(f"/api/scans/{scan_id}/analyze-wrinkles")
+    assert failed.status_code == 503 and "private model details" not in failed.text
+    assert first.get(f"/api/scans/{scan_id}").json()["wrinkle_assessment"] == expected
+    assert first.delete(f"/api/scans/{scan_id}").status_code == 204
+    assert first.post(f"/api/scans/{scan_id}/analyze-wrinkles").status_code == 404
+
+
 def test_registration_login_profile_and_password_storage(clients):
     first, _ = clients
     user = register(first, " One@Example.com ")

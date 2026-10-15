@@ -60,3 +60,12 @@ After installing `requirements-dev.txt`, run from `backend/`:
 ```
 
 The first run downloads the pinned community checkpoint, then performs CPU inference on a synthetic RGB image. A successful result checks loading and execution only, not accuracy. Supply a local photo path as an optional argument; the script processes it locally and does not store or upload it. Checkpoint weights remain in the local Hugging Face cache and are not committed. The model revision is fixed in `app/ai/acne_model.py`, and only safetensors weights with remote code disabled are loaded. The application still requires separately trained, validated checkpoints for its other seven indicators.
+
+
+## Experimental wrinkle presence detection
+
+`POST /api/scans/{id}/analyze-wrinkles` runs independently from acne analysis on the stored front photograph. The existing owner/guest access rules apply. Results are saved as `wrinkle_assessment` in scan metadata and appear in account scan listings. The original scan status, appearance scores and routines remain unchanged.
+
+The pinned community checkpoint is `imfarzanansari/skintelligent-wrinkles` at revision `32ddddd41a7e035bbe3abbe4510e0a0ca4b6fb12`, with MIT declared by its publisher. Only safetensors weights are loaded and remote code is disabled. Dependencies are in `requirements.txt`; the first run downloads the weights. Run `python scripts/check_wrinkles.py` for a synthetic execution check. Model source: [publisher's model card](https://huggingface.co/imfarzanansari/skintelligent-wrinkles).
+
+The result contains `label`, `wrinkle_probability`, `model`, `revision` and `experimental`. The probability is for the wrinkle class, not the selected class, and is not a severity/quality score or calibrated clinical confidence. There is no independent accuracy validation bundled. Failures return 503 and retain any earlier saved assessment. Web users can open a scan analysis page and choose **Detect wrinkles only**; iOS users use the same action in History. Older scans without an assessment remain readable. No photos are sent to Hugging Face; weights are downloaded and inference runs on the configured backend.

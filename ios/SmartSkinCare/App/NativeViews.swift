@@ -73,6 +73,15 @@ struct NativeHistoryView: View {
                         } else {
                             Button("Run analysis") { Task { await workspace.perform { _ = try await workspace.api.analyze(scan.id); try await workspace.reload() } } }
                         }
+                        if let assessment = scan.wrinkleAssessment {
+                            Text(assessment.label == "wrinkle" ? "Wrinkles detected by the model" : "Wrinkles not detected by the model").bold()
+                            Text("Wrinkle class probability: \(assessment.wrinkleProbability * 100, specifier: "%.1f")%. Experimental; not a severity score or clinical confidence.").font(.caption)
+                            Text("\(assessment.model) · \(assessment.revision.prefix(7))").font(.caption)
+                        }
+                        Button("Detect wrinkles only · experimental") { Task { await workspace.perform {
+                            let _: WrinkleAssessment = try await workspace.api.request("/api/scans/\(scan.id)/analyze-wrinkles", method: "POST")
+                            try await workspace.reload()
+                        } } }
                         Button("Delete scan and photos", role: .destructive) { deletion = scan }
                     }
                 }

@@ -16,6 +16,8 @@ from fastapi.responses import Response
 from PIL import Image
 
 from app.ai.aggregation import run_models
+from app.ai.wrinkle_model import predict_wrinkles
+from app.schemas.scan import WrinkleAssessment
 from app.config import settings
 from app.services.storage import LocalScanStorage
 from app.api.auth import OptionalUser, CurrentUser
@@ -232,3 +234,26 @@ def analyze_scan(scan_id: str, user: OptionalUser) -> dict:
     storage.save_meta(scan_id, meta)
     sync_scan(meta)
     return result
+
+
+@router.post("/api/scans/{scan_id}/analyze-wrinkles", response_model=WrinkleAssessment)
+def analyze_wrinkles(scan_id: str, user: OptionalUser) -> dict:
+    meta = accessible_meta(scan_id, user)
+    filename = meta.get("images", {}).get("front")
+    data = storage.load_image(scan_id, filename) if filename else None
+    if data is None:
+        raise HTTPException(404, "Stored front image is missing")
+    try:
+        from PIL import ImageOps
+        with Image.open(BytesIO(data)) as image:
+            pixels = np.asarray(ImageOps.exif_transpose(image).convert("RGB"))
+    except Exception:
+        raise HTTPException(422, "Stored front image could not be decoded")
+    try:
+        assessment = predict_wrinkles(pixels)
+    except Exception:
+        raise HTTPException(503, "Wrinkle detection is unavailable. Check model installation or connectivity and retry.")
+    meta = accessible_meta(scan_id, user)
+    meta["wrinkle_assessment"] = assessment
+    storage.save_meta(scan_id, meta)
+    return assessment

@@ -1,6 +1,6 @@
 import { apiClient, BASE_URL } from "@/lib/apiClient";
 import type { ScanAngle } from "@/lib/faceQuality";
-import type { SkinScanResult } from "@/types/skin";
+import type { SkinScanResult, WrinkleAssessment } from "@/types/skin";
 import { useSkinStore } from "@/store/useSkinStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { queryClient } from "@/lib/queryClient";
@@ -16,7 +16,15 @@ export interface UploadedScan {
 
 export interface ScanMeta extends UploadedScan {
   result?: SkinScanResult;
+  wrinkle_assessment?: WrinkleAssessment;
 }
+
+export const analyzeWrinkles = async (scanId: string) => {
+  const result = await apiClient.post<WrinkleAssessment>(`/api/scans/${scanId}/analyze-wrinkles`);
+  void queryClient.invalidateQueries({ queryKey: ["scan", scanId] });
+  void queryClient.invalidateQueries({ queryKey: ["account-scans"] });
+  return result;
+};
 
 export const getScan = async (scanId: string) => {
   const ownerId = useAuthStore.getState().user?.id;

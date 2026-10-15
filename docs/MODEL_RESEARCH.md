@@ -1,6 +1,6 @@
 # Recherche de modèles pour les sept indicateurs
 
-Vérification : 15 octobre 2026. Les dépôts, configurations et listes de fichiers ont été consultés directement sur Hugging Face et GitHub. Cette recherche ne constitue pas une évaluation de précision. Aucun nouveau modèle n'est activé par ce rapport.
+Vérification : 15 octobre 2026. Les dépôts, configurations et listes de fichiers ont été consultés directement sur Hugging Face et GitHub. Cette recherche ne constitue pas une évaluation de précision. Le modèle binaire de rides est désormais intégré dans une analyse expérimentale séparée, sans score de sévérité. Les six autres pistes restent à évaluer.
 
 ## Résultat par indicateur
 

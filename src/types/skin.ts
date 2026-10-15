@@ -6,6 +6,14 @@
 
 export type CaptureMode = "camera" | "truedepth";
 
+export interface WrinkleAssessment {
+  label: "wrinkle" | "non-wrinkle";
+  wrinkle_probability: number;
+  model: string;
+  revision: string;
+  experimental: boolean;
+}
+
 export type FaceRegionId =
   | "forehead"
   | "nose"

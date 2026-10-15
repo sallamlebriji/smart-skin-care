@@ -23,7 +23,15 @@ struct ScanRecord: Codable, Identifiable {
     let captureMode: CaptureMode
     let status: String
     let result: FaceScanResult?
+    let wrinkleAssessment: WrinkleAssessment?
     var id: String { scanId }
+}
+struct WrinkleAssessment: Codable {
+    let label: String
+    let wrinkleProbability: Double
+    let model: String
+    let revision: String
+    let experimental: Bool
 }
 struct Account: Codable { let id: String; let email: String }
 struct EmptyResponse: Decodable {}

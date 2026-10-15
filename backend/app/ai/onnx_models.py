@@ -118,7 +118,12 @@ def predict_configured(metric: str, image: np.ndarray) -> ModelOutput | None:
 def model_status() -> dict:
     models = configured_models()
     available = importlib.util.find_spec("onnxruntime") is not None
-    return {"onnx_runtime_available": available, "indicators": [{
+    from app.ai.wrinkle_model import MODEL_ID, MODEL_REVISION
+    return {"onnx_runtime_available": available, "binary_assessments": [{
+        "name": "wrinkle_presence", "source": MODEL_ID, "revision": MODEL_REVISION,
+        "runtime_available": all(importlib.util.find_spec(package) is not None for package in ("torch", "transformers")),
+        "experimental": True, "license": "MIT",
+    }], "indicators": [{
         "metric": metric,
         "status": "configured" if metric in models else "community_checkpoint" if metric == "acne" else "not_configured",
         "runtime_available": available if metric in models else metric == "acne" and all(importlib.util.find_spec(package) is not None for package in ("torch", "transformers")),
