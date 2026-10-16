@@ -1,4 +1,4 @@
-"""Cookie-based JWT access and rotating, database-backed refresh sessions."""
+"""Web cookie/native bearer JWT access and rotating database-backed sessions."""
 import hashlib
 import hmac
 import re
@@ -77,7 +77,14 @@ _DUMMY_PASSWORD_HASH = password_hash("unused-password")
 def optional_user(request: Request) -> User | None:
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
         check_origin(request)
-    token = request.cookies.get("skin_access")
+    authorization = request.headers.get("authorization")
+    if authorization is not None:
+        scheme, _, token = authorization.partition(" ")
+        if scheme.lower() != "bearer" or not token.strip():
+            raise HTTPException(401, "Invalid authorization header")
+        token = token.strip()
+    else:
+        token = request.cookies.get("skin_access")
     if not token:
         if request.cookies.get("skin_refresh") or request.headers.get("x-account-session") == "true":
             raise HTTPException(401, "Session expired; sign in again")
@@ -116,7 +123,7 @@ def public_user(user: User) -> dict:
     return {"id": user.id, "email": user.email}
 
 
-def issue_session(response: Response, db: Session, user: User) -> dict:
+def issue_session(response: Response, db: Session, user: User, *, native: bool = False) -> dict:
     refresh = secrets.token_urlsafe(48)
     session = AuthSession(user_id=user.id, token_hash=hashlib.sha256(refresh.encode()).hexdigest(),
                           expires_at=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=settings.refresh_token_expire_days))
@@ -126,6 +133,9 @@ def issue_session(response: Response, db: Session, user: User) -> dict:
                          "exp": datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)},
                         settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     db.commit()
+    if native:
+        return {"user": public_user(user), "access_token": access, "refresh_token": refresh,
+                "token_type": "bearer", "expires_in": settings.access_token_expire_minutes * 60}
     response.set_cookie("skin_access", access, httponly=True, secure=not settings.debug, samesite="lax",
                         max_age=settings.access_token_expire_minutes * 60, path="/api")
     response.set_cookie("skin_refresh", refresh, httponly=True, secure=not settings.debug, samesite="lax",
@@ -134,6 +144,7 @@ def issue_session(response: Response, db: Session, user: User) -> dict:
 
 
 @router.post("/auth/register", status_code=201)
+@router.post("/mobile/auth/register", status_code=201)
 def register(body: Credentials, request: Request, response: Response, db: DB):
     check_origin(request)
     user = User(email=body.email, hashed_password=password_hash(body.password))
@@ -141,13 +152,14 @@ def register(body: Credentials, request: Request, response: Response, db: DB):
     try:
         db.flush()
         db.add(Profile(user_id=user.id))
-        return issue_session(response, db, user)
+        return issue_session(response, db, user, native=request.url.path.startswith("/api/mobile/"))
     except IntegrityError:
         db.rollback()
         raise HTTPException(409, "An account with this email already exists")
 
 
 @router.post("/auth/login")
+@router.post("/mobile/auth/login")
 def login(body: Credentials, request: Request, response: Response, db: DB):
     check_origin(request)
     user = db.scalar(select(User).where(User.email == body.email))
@@ -156,13 +168,17 @@ def login(body: Credentials, request: Request, response: Response, db: DB):
     _, salt, _ = stored.split("$")
     if not hmac.compare_digest(password_hash(body.password, salt), stored) or not user:
         raise HTTPException(401, "Email or password is incorrect")
-    return issue_session(response, db, user)
+    return issue_session(response, db, user, native=request.url.path.startswith("/api/mobile/"))
 
 
 @router.post("/auth/refresh")
 def refresh(request: Request, response: Response, db: DB):
     check_origin(request)
-    digest = hashlib.sha256(request.cookies.get("skin_refresh", "").encode()).hexdigest()
+    return rotate_session(request.cookies.get("skin_refresh", ""), response, db)
+
+
+def rotate_session(token: str, response: Response, db: Session, *, native: bool = False):
+    digest = hashlib.sha256(token.encode()).hexdigest()
     session = db.scalar(select(AuthSession).where(AuthSession.token_hash == digest))
     if not session or session.expires_at <= datetime.now(timezone.utc).replace(tzinfo=None):
         raise HTTPException(401, "Session expired; sign in again")
@@ -172,7 +188,25 @@ def refresh(request: Request, response: Response, db: DB):
     if removed.rowcount != 1 or user is None:
         db.rollback()
         raise HTTPException(401, "Session expired; sign in again")
-    return issue_session(response, db, user)
+    return issue_session(response, db, user, native=native)
+
+
+class MobileRefresh(BaseModel):
+    refresh_token: str = Field(min_length=1, max_length=512)
+
+
+@router.post("/mobile/auth/refresh")
+def mobile_refresh(body: MobileRefresh, request: Request, response: Response, db: DB):
+    check_origin(request)
+    return rotate_session(body.refresh_token, response, db, native=True)
+
+
+@router.post("/mobile/auth/logout", status_code=204)
+def mobile_logout(body: MobileRefresh, request: Request, db: DB):
+    check_origin(request)
+    digest = hashlib.sha256(body.refresh_token.encode()).hexdigest()
+    db.execute(delete(AuthSession).where(AuthSession.token_hash == digest))
+    db.commit()
 
 
 @router.post("/auth/logout", status_code=204)

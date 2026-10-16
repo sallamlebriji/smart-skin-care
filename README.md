@@ -1,6 +1,10 @@
 # Smart Skin Care
 
-A browser application for camera capture, visual skin analysis, account-based history, recommendations, saved routines and a scan-grounded assistant.
+A React web application and an Expo / React Native mobile application for camera capture, visual skin analysis, account-based history, recommendations, saved routines and a scan-grounded assistant. Both use the same FastAPI backend and accounts.
+
+## React Native mobile app
+
+The cross-platform mobile client is in [`mobile/`](mobile/README.md), with native Android/iOS screens for sign-in, three-view capture or photo selection, history, measured comparisons, analysis, saved routines, profile editing and consent-based chat. Follow the mobile guide for Windows/Android emulator, phone and EAS cloud build instructions. The existing SwiftUI app remains available for its platform-specific TrueDepth work; depth capture and automatic pose/quality checks have not been ported to Expo.
 
 ## Implemented
 

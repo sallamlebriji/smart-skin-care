@@ -10,6 +10,25 @@ permissions:
   contents: read
 
 jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - name: Bundle React Native Android and iOS applications
+        run: npm run export -- --max-workers 2
+
   web:
     runs-on: ubuntu-latest
     steps:
