@@ -56,6 +56,14 @@ npx eas-cli@latest build --platform android --profile preview
 
 The preview profile produces an installable Android APK. Download the completed build from the URL EAS returns, then install it on the emulator or phone. EAS requires your Expo account and may have queue/plan limits. The project is linked to [@sallam_lebriji/smart-skin-care](https://expo.dev/accounts/sallam_lebriji/projects/smart-skin-care); signing credentials are not committed. All build profiles use Node 22.23.3.
 
+### Verified Android preview
+
+The first native Android release build succeeded on 2026-10-16 from app commit `c39cad9`: [EAS build details](https://expo.dev/accounts/sallam_lebriji/projects/smart-skin-care/builds/e44ff1dc-317c-4e7d-a8ba-73b58ae07322), [download APK](https://expo.dev/artifacts/eas/VsX2zhpz24xzeOsKtn4mXzzzO0z37U9hlLc9KBQ07u0.apk). The installer is 123,296,455 bytes and contains ARM64, ARMv7, x86 and x86_64 native libraries, supporting Android phones and compatible emulators. Archive integrity and the presence of its APK signing block were checked after download. It has **not** been launched on a native device/emulator here.
+
+SHA-256: `122a84f92d50816b7d6c8e7bdab4f6fe39ee370cd4a324f2c07fda3d2953c879`.
+
+Install the APK on Android, start the backend as above, then enter `http://10.0.2.2:8001` for a Windows Android emulator or your computer's LAN address for a phone. Confirm camera permission, three-view capture, upload consent, analysis, profile/routine/chat persistence, sign-out and session restoration on a real device. iOS native compilation and device testing remain separate.
+
 For a custom development client:
 
 ```powershell
@@ -77,7 +85,7 @@ npx expo-doctor
 npm run export -- --max-workers 2
 ```
 
-CI runs lint, typecheck, transport tests and Android/iOS JavaScript exports. An export verifies bundle generation, **not** native compilation, permissions, camera, SecureStore persistence or device interaction. Backend tests cover bearer login, ownership, invalid headers, token rotation/reuse, revocation and existing cookie-client compatibility. A native EAS build and device acceptance pass remain necessary.
+CI runs lint, typecheck, transport tests and Android/iOS JavaScript exports. An export verifies bundle generation, **not** native compilation, permissions, camera, SecureStore persistence or device interaction. Backend tests cover bearer login, ownership, invalid headers, token rotation/reuse, revocation and existing cookie-client compatibility. The separate EAS Android build above establishes native compilation; native iOS compilation and device acceptance tests remain necessary.
 
 Local validation on 2026-10-16: 74 backend tests, 8 mobile transport tests, lint/typecheck, both platform exports and all 21 Expo Doctor checks passed. A headless Chromium web preview also exercised registration, protected navigation, saved routine, local chat, profile persistence, sign-out/sign-in, three-photo selection, the consent gate and upload/history against an isolated API/database. This browser pass does not substitute for native device tests. The SDK 57 dependency tree's npm audit currently reports 28 advisories (18 high, 10 moderate), including tooling dependencies; review upstream compatible fixes before production distribution. Do not apply `npm audit fix --force`, which proposes incompatible SDK changes.
 
