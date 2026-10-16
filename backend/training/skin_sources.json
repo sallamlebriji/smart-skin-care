@@ -1,0 +1,78 @@
+{
+  "facial-skin-acne-pigmentation-pores-wrinkles": {
+    "source": "https://www.kaggle.com/datasets/shijo96john/facial-skin-acne-pigmentation-pores-wrinkles",
+    "version": 1,
+    "sha256": "a948dbff73018115a7621074cbfc5c9c406738827291ccb0def953aa65932702",
+    "downloaded": "2026-10-16"
+  },
+  "acne-computer-vision": {
+    "source": "https://www.kaggle.com/datasets/imtkaggleteam/acne-computer-vision",
+    "version": 1,
+    "sha256": "d98074cfe1eaa397e4f312487b2042a20e44e76b2e489c382ba7ac725e30f97b",
+    "downloaded": "2026-10-16"
+  },
+  "pore_net": {
+    "downloaded": "2026-10-16",
+    "source": "https://github.com/ZombaSY/Pore-Net-release",
+    "revision": "6f851e0d911bd73f41dd905c685129b13d52e1bc",
+    "files": [
+      {
+        "sha256": "425b40c3679f9c6f6426c3c04bf5edb714d8bdf9dc1a4c35b1d92423e5e91238",
+        "file": "README.md"
+      },
+      {
+        "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+        "file": "LICENSE"
+      },
+      {
+        "sha256": "486afb01a9c9b9c33b98c08dcc391dc710ddba8a1b9ecfc33d99f88608a51607",
+        "file": "models/model.py"
+      },
+      {
+        "sha256": "0672741951bc66b340fba923bc65d727b3ceefb3b33e959bdb91a3ac5909d45e",
+        "file": "models/dataloader.py"
+      },
+      {
+        "sha256": "6237d4a51c1116364e194541a4104181c0eeb78ed941506e55930ca31838b508",
+        "file": "inference.py"
+      },
+      {
+        "sha256": "4cd498d498a6c1d43b384f717c2bab9167dc92a1d8d27d790ca6cf371675651e",
+        "file": "hyper_parameters/inference.yml"
+      },
+      {
+        "sha256": "a2d0f5f20eee45197612d55d2404ef988832dbcd50dc949bfcd16f5978711da7",
+        "file": "model_checkpoints/PoreNet.pt"
+      },
+      {
+        "sha256": "2d050468ccfc712352ac34709142f79bc67084e039120d3ba2c7d0f226c14f5f",
+        "file": "data_examples/input_cropped/20190315_144533_white.png"
+      },
+      {
+        "sha256": "8e2329833477be157f17ff32d211562fe9d59b02e0c4db6f8d0063acaef3c43f",
+        "file": "data_examples/label_cropped/20190315_144533_white.png"
+      },
+      {
+        "sha256": "5aeee1b554907007962839c5b9f99ce41228ffcbdce0fc79c971c617bb6a43ad",
+        "file": "data_examples/mask_cropped/20190315_144533_white.png"
+      }
+    ]
+  },
+  "scarnet-research": {
+    "source": "https://github.com/isaigm/scarnet",
+    "revision": "4d515756feff2cf8b735f36fa362770fb3536268",
+    "images": 251,
+    "class_counts": {
+      "Boxcar": 50,
+      "Hypertrophic": 50,
+      "Ice Pick": 50,
+      "Keloid": 51,
+      "Rolling": 50
+    },
+    "declared_repository_license": null,
+    "status": "local research only; no production activation; types are not severity",
+    "sha256": "d1e206e441563d9f658e8616638280f6294a79dcf876b34d8d91dbc5165c4aa4",
+    "version": "4d515756feff2cf8b735f36fa362770fb3536268",
+    "license_note": "README declares MIT for project; no standalone LICENSE found; image-specific permissions not documented"
+  }
+}

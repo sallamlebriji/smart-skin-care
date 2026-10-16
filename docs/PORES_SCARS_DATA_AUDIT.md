@@ -28,3 +28,44 @@ Le modèle d'acné existant fournit déjà des classes d'acné. Ces classes ne r
 ## État de livraison
 
 Recherche et obstacles documentés ; pas de téléchargement des bases restreintes, pas d'entraînement pores/cicatrices effectué, pas de nouvelle précision annoncée et pas de résultat artificiel dans le rapport. L'export annoté exploitable et les annotations de sévérité restent nécessaires.
+
+## Nouvelle recherche : téléchargements effectivement obtenus
+
+La recherche complémentaire a trouvé des sources supplémentaires. Les résultats ci-dessous remplacent le constat initial d'absence de données directement téléchargeables pour les pores.
+
+### Pores : images classées et segmentation
+
+- [Facial Skin, Shijo John, Kaggle, version 1](https://www.kaggle.com/datasets/shijo96john/facial-skin-acne-pigmentation-pores-wrinkles) : archive de **261 014 006 octets**, téléchargée et intégrité ZIP vérifiée. **4 233 images**, dont **600 dans `pores`**. Licence déclarée par le déposant : Apache 2.0. La description ne documente pas les consentements individuels, la qualification des annotateurs ou une échelle de sévérité.
+- Audit initial des pixels RGB avant correction EXIF : 4 099 images uniques dans l'ensemble de l'archive, 115 groupes de doublons exacts. L'inspection d'une planche de 12 images de pores montre également des variantes très proches. Ne pas faire de séparation aléatoire image par image sans regrouper les variantes et, si possible, les personnes.
+- Une catégorie `pores` est une annotation de préoccupation cutanée, **pas un masque de pores, un nombre, ni un grade de sévérité**. Les autres catégories ne sont pas nécessairement des négatifs fiables pour les pores.
+- Préparation terminée : **592 images de pores uniques en pixels** après orientation EXIF, exportées localement avec manifeste et CSV de relecture. Les variantes visuellement proches ne sont pas éliminées par ce contrôle des doublons exacts.
+- [Pore-Net, dépôt des auteurs](https://github.com/ZombaSY/Pore-Net-release), révision `6f851e0d911bd73f41dd905c685129b13d52e1bc` : checkpoint **27 390 octets**, architecture et un triplet image/annotation/masque de région téléchargés. Licence du dépôt Apache-2.0 ; le README ne décrit pas les conditions de collecte des images. Un exemple n'est pas une base d'entraînement complète.
+- Test local CPU réussi : chargement strict du checkpoint avec `weights_only=True`, entrée RGB normalisée selon le code des auteurs à 1280 × 1024, sortie de segmentation finie aux dimensions attendues. Seuil 0,25 repris de leur configuration. Ce test **ne mesure pas une précision indépendante**, l'exemple pouvant appartenir aux données d'entraînement. Aucune classe de sévérité n'est produite.
+
+### Fausse piste écartée après téléchargement
+
+[Acne Computer Vision, IMT Kaggle Team, version 1](https://www.kaggle.com/datasets/imtkaggleteam/acne-computer-vision) : archive de **89 110 099 octets**, intégrité ZIP vérifiée ; **2 047 images** et trois CSV de boîtes englobantes. La description prévoit une future classe `Scar`, mais les CSV présents contiennent seulement **4 169 `acne`, 643 `pimple`, 5 060 `spot`**. Aucune annotation `scar` : les taches ne sont pas renommées cicatrices. Licence déclarée CC BY 4.0.
+
+### Cicatrices : archive réellement accessible
+
+[isaigm/scarnet](https://github.com/isaigm/scarnet), révision `4d515756feff2cf8b735f36fa362770fb3536268` : archive **69 950 531 octets**, téléchargée et intégrité ZIP vérifiée. Le README annonce 250 images ; l'archive contient effectivement **251 fichiers image** : Boxcar 50, Hypertrophic 50, Ice Pick 50, Keloid 51, Rolling 50. Ce sont des **types de cicatrices, pas des degrés de sévérité**. L'audit local doit éliminer les doublons et contrôler le contenu avant entraînement.
+
+L'audit local a identifié **249 images uniques en pixels après orientation EXIF**, deux groupes de doublons exacts et aucun fichier image illisible. Les quasi-doublons, identités et incohérences entre types restent à contrôler.
+
+Le README déclare le projet sous licence MIT, mais aucun fichier LICENSE séparé n'a été trouvé et les permissions individuelles des images ne sont pas documentées. Archive conservée pour étude locale, sans redistribution des photos ni activation dans le produit. Le checkpoint inclus est un classifieur de types, sans classe « peau sans cicatrice » : il ne convient pas à une détection universelle de présence. L'auteur rapporte une moyenne de validation croisée de 64,4 %, très inférieure au résultat d'un découpage favorable ; ces résultats externes n'ont pas été reproduits ici et ne prouvent pas une indépendance entre personnes.
+
+### Emplacement et reproduction du contrôle
+
+Les archives, métadonnées et empreintes SHA-256 sont conservées localement dans `backend/data/skin_dataset_search/`, les fichiers Pore-Net dans `backend/data/pore_net_research/`. Aucun visage ni poids n'est ajouté à Git.
+
+Le manifeste versionné `backend/training/skin_sources.json` fixe les sources, versions, révision Pore-Net et empreintes des fichiers récupérés. Depuis la racine du dépôt :
+
+```powershell
+backend/.venv/Scripts/python.exe backend/training/audit_skin_datasets.py
+```
+
+Ce contrôle vérifie les empreintes et les archives, décode les photos, inventorie les annotations, exporte les images de pores et de cicatrices sous noms dérivés des pixels dans `prepared_pores/images/` et `prepared_scars/images/`, et crée des manifestes avec `severity`, `subject_id` et `split` laissés explicitement vides. Il ne fabrique ni grades ni indépendance entre personnes. Le rapport est `verified_audit.json` dans le même dossier local.
+
+Chaque dossier préparé reçoit aussi un `severity-to-review.csv` compatible avec le format de contrôle de l'entraînement existant. Les colonnes `label`, `annotator`, `subject_id` et `split` restent vides tant qu'une relecture ne les a pas remplies. `original_type` conserve la catégorie d'origine sans la transformer en grade. Un CSV existant n'est jamais écrasé par l'audit. En l'état, ces CSV ne peuvent pas entraîner de modèle de sévérité : les validations exigent les annotations manquantes.
+
+Le résumé reproductible des résultats contrôlés est versionné dans `backend/training/skin_data_audit.json`. Vérifications effectuées : intégrité des trois ZIP, empreintes des sources, décodage des images, présence des 592 + 249 fichiers préparés, absence de grades/splits fabriqués, test de segmentation Pore-Net et contrôles du script sur une petite archive d'essai (doublons, rejet d'une empreinte incorrecte, conservation d'un CSV relu). Aucun entraînement ou test clinique n'a été effectué sur ces nouvelles données.
