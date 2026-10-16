@@ -10,7 +10,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.smartskincare.mobile",
-      "config": { "usesNonExemptEncryption": false }
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.smartskincare.mobile",
@@ -29,8 +31,27 @@
       "expo-router",
       "expo-secure-store",
       "expo-font",
-      ["expo-camera", { "cameraPermission": "Take three face photos for your private skin journal.", "recordAudioAndroid": false }],
-      ["expo-image-picker", { "photosPermission": "Select face photos to add to your skin journal.", "microphonePermission": false }]
-    ]
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Take three face photos for your private skin journal.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Select face photos to add to your skin journal.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "92d9b174-11bf-4e42-b162-a86ece0bf593"
+      }
+    },
+    "owner": "sallam_lebriji"
   }
 }

@@ -54,7 +54,7 @@ npx eas-cli@latest build:configure
 npx eas-cli@latest build --platform android --profile preview
 ```
 
-The preview profile produces an installable Android APK. Download the completed build from the URL EAS returns, then install it on the emulator or phone. EAS requires your Expo account and may have queue/plan limits. This repository does not contain signing credentials or an assigned EAS project ID.
+The preview profile produces an installable Android APK. Download the completed build from the URL EAS returns, then install it on the emulator or phone. EAS requires your Expo account and may have queue/plan limits. The project is linked to [@sallam_lebriji/smart-skin-care](https://expo.dev/accounts/sallam_lebriji/projects/smart-skin-care); signing credentials are not committed. All build profiles use Node 22.23.3.
 
 For a custom development client:
 
