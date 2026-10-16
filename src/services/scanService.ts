@@ -56,7 +56,7 @@ export const deleteScan = async (scanId: string) => {
   void queryClient.invalidateQueries({ queryKey: ["account-scans"] });
 };
 
-/** Runs the real acne model (plus 7 still-mock metrics — check `mock_metrics`). */
+/** Runs available trained models. Missing indicators have no numeric result. */
 export const analyzeScan = async (scanId: string) => {
   const ownerId = useAuthStore.getState().user?.id;
   const result = await apiClient.post<SkinScanResult>(`/api/scans/${scanId}/analyze`);

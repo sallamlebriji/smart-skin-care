@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { computeRegionPolygons, REGION_COLOR, REGION_LABEL, type RegionId, type RegionPolygon } from "@/lib/faceRegions";
+import { computeRegionPolygons, excludedFeaturePolygons, REGION_COLOR, REGION_LABEL, type RegionId, type RegionPolygon } from "@/lib/faceRegions";
 import { getFaceLandmarkerImage } from "@/lib/faceLandmarkerImage";
 import { segmentImage } from "@/lib/skinSegmenter";
-import { analyzeRegions, type RegionStats } from "@/lib/regionAnalysis";
+import { analyzeRegions, measureFaceImage, type RegionStats } from "@/lib/regionAnalysis";
+import type { ImageMeasurements } from "@/lib/imageMeasurements";
+import ImageMeasurementPanel from "./ImageMeasurementPanel";
 
 type State = "loading" | "ready" | "no-face" | "error";
 
@@ -13,7 +15,7 @@ type State = "loading" | "ready" | "no-face" | "error";
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    img.crossOrigin = "use-credentials";
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error("Image failed to load"));
     img.src = src;
@@ -28,18 +30,22 @@ function loadImage(src: string): Promise<HTMLImageElement> {
  * viewer click a region on the photo or in the list to inspect it. Purely
  * descriptive image statistics — not a diagnosis; see SAFETY_DISCLAIMER.
  */
-export default function FaceRegionExplorer({ imageUrl }: { imageUrl: string }) {
+export default function FaceRegionExplorer({ imageUrl, showMap = true }: { imageUrl: string; showMap?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const polygonsRef = useRef<RegionPolygon[]>([]);
   const [state, setState] = useState<State>("loading");
   const [stats, setStats] = useState<RegionStats[]>([]);
   const [selected, setSelected] = useState<RegionId | null>(null);
   const [natural, setNatural] = useState({ w: 1, h: 1 });
+  const [measurements, setMeasurements] = useState<ImageMeasurements | null>(null);
+  const [measurementError, setMeasurementError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     setState("loading");
     setSelected(null);
+    setMeasurements(null);
+    setMeasurementError("");
 
     (async () => {
       const img = await loadImage(imageUrl);
@@ -52,14 +58,18 @@ export default function FaceRegionExplorer({ imageUrl }: { imageUrl: string }) {
       }
 
       const polygons = computeRegionPolygons(face, img.naturalWidth, img.naturalHeight);
-      const segmentation = await segmentImage(img);
-
       const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext("2d")!.drawImage(img, 0, 0);
-      const results = analyzeRegions(canvas, polygons, segmentation);
+      const scale = Math.min(1, 512 / Math.max(img.naturalWidth, img.naturalHeight));
+      canvas.width = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const analysisPolygons = computeRegionPolygons(face, canvas.width, canvas.height);
+      const exclusions = excludedFeaturePolygons(face, canvas.width, canvas.height);
+      const segmentation = await segmentImage(canvas);
+      const results = analyzeRegions(canvas, analysisPolygons, segmentation, exclusions);
       if (cancelled) return;
+      try { setMeasurements(measureFaceImage(canvas, analysisPolygons, segmentation, exclusions)); }
+      catch (error) { setMeasurementError(error instanceof Error ? error.message : "Mesure indisponible."); }
 
       polygonsRef.current = polygons;
       setNatural({ w: img.naturalWidth, h: img.naturalHeight });
@@ -124,7 +134,11 @@ export default function FaceRegionExplorer({ imageUrl }: { imageUrl: string }) {
     setSelected(hit ? (hit.id === selected ? null : hit.id) : null);
   };
 
-  return (
+  const measurementPanel = measurements ? <ImageMeasurementPanel value={measurements} /> : <section className="workspace-card" aria-live="polite">
+    <h2>Mesures sur la photo</h2><p>{measurementError || (state === "loading" ? "Repérage du visage et calcul sur les pixels de peau…" : state === "no-face" ? "Aucun visage détecté : aucune valeur n’est calculée." : "Mesures indisponibles : vérifiez la photo et rechargez le rapport.")}</p>
+  </section>;
+  if (!showMap) return measurementPanel;
+  return (<>
     <div className="grid grid-cols-1 sm:grid-cols-[1.1fr_1fr] gap-6 items-start">
       <div style={{ borderRadius: "var(--radius-xl)", border: "1px solid var(--line)", overflow: "hidden", background: "#fff" }}>
         <div className="relative" style={{ aspectRatio: "3 / 4", background: "linear-gradient(160deg, #fff, var(--rose-tint))" }}>
@@ -179,7 +193,7 @@ export default function FaceRegionExplorer({ imageUrl }: { imageUrl: string }) {
                   <span style={{ color: "var(--ink-faint)" }}>Not enough visible skin to measure</span>
                 ) : (
                   <span style={{ color: "var(--ink-faint)" }}>
-                    tone {(s.luma * 100).toFixed(0)}% · texture {s.texture < 15 ? "smooth" : s.texture < 45 ? "moderate" : "uneven"}
+                    luminance {(s.luma * 255).toFixed(1)}/255 · variance du Laplacien {s.texture.toFixed(2)}
                   </span>
                 )}
               </button>
@@ -188,5 +202,7 @@ export default function FaceRegionExplorer({ imageUrl }: { imageUrl: string }) {
         )}
       </div>
     </div>
+    {measurementPanel}
+    </>
   );
 }

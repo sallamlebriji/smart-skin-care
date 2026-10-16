@@ -104,9 +104,11 @@ def test_analyze_computes_and_persists_result(client, monkeypatch):
     assert res.status_code == 200
     body = res.json()
     assert body["metrics"]["acne"] == 70.0
+    assert body["metrics"] == {"acne": 70.0}
+    assert body["analysis_version"] == 2
     assert body["mock_metrics"] == ["redness", "pigmentation", "pores", "texture", "wrinkles", "scars", "uniformity"]
     assert body["is_mock_result"] is True
-    assert body["overall_score"] == round((70.0 + 50.0 * 7) / 8, 1)
+    assert body["overall_score"] == 70.0  # Never average simulated values into a real result.
     assert body["quality"]["lighting"] == 0.95  # 1 - |0.5-0.5|*2 - 0.05
     assert body["quality"]["position"] == 1.0  # yaw exactly centered
 
@@ -117,6 +119,19 @@ def test_analyze_computes_and_persists_result(client, monkeypatch):
 
 def test_analyze_missing_scan_is_404(client):
     assert client.post("/api/scans/scan_doesnotexist/analyze").status_code == 404
+
+
+def test_analysis_respects_exif_orientation(client, monkeypatch):
+    from PIL import Image
+    image = Image.new("RGB", (20, 40), (120, 90, 80))
+    exif = image.getexif(); exif[274] = 6
+    stream = io.BytesIO(); image.save(stream, format="JPEG", exif=exif)
+    def check(pixels):
+        assert pixels.shape == (20, 40, 3)
+        return _fake_run_models(pixels)
+    monkeypatch.setattr(scans_module, "run_models", check)
+    scan_id = client.post("/api/scans", files=_files(front=("front.jpg", stream.getvalue(), "image/jpeg")), data={"consent": "true"}).json()["scan_id"]
+    assert client.post(f"/api/scans/{scan_id}/analyze").status_code == 200
 
 
 def test_get_scan_image_roundtrip(client):

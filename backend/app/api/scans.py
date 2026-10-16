@@ -201,7 +201,8 @@ def analyze_scan(scan_id: str, user: OptionalUser) -> dict:
         raise HTTPException(500, "Stored front image is missing or unreadable")
 
     try:
-        face_image = np.array(Image.open(BytesIO(data)).convert("RGB"))
+        from PIL import ImageOps
+        face_image = np.array(ImageOps.exif_transpose(Image.open(BytesIO(data))).convert("RGB"))
     except Exception:
         raise HTTPException(500, "Stored front image could not be decoded")
 
@@ -209,7 +210,9 @@ def analyze_scan(scan_id: str, user: OptionalUser) -> dict:
         run = run_models(face_image)
     except Exception:
         raise HTTPException(503, "Analysis is unavailable. The server operator must check model configuration or connectivity.")
-    overall_score = sum(run["metrics"].values()) / len(run["metrics"])
+    # Compatibility-only index. Unavailable/simulated indicators never contribute.
+    real_scores = [value for key, value in run["metrics"].items() if key not in run["mock_metrics"]]
+    overall_score = sum(real_scores) / len(real_scores) if real_scores else 0
     quality = _quality_from_capture(meta.get("quality", {}).get("front", {}))
 
     result = {
@@ -222,11 +225,14 @@ def analyze_scan(scan_id: str, user: OptionalUser) -> dict:
         # real; don't trust this field on its own.
         "skin_type_estimate": "normal",
         "overall_score": round(overall_score, 1),
-        "metrics": run["metrics"],
+        "metrics": {key: value for key, value in run["metrics"].items() if key not in run["mock_metrics"]},
         "regions": {},  # Phase 4's region map runs client-side only; not sent here yet
         "confidence": round(run["confidence"], 2),
         "is_mock_result": run["is_mock_result"],
         "mock_metrics": run["mock_metrics"],
+        "unavailable_metrics": run.get("unavailable_metrics", run["mock_metrics"]),
+        "model_assessments": run.get("model_assessments", {}),
+        "analysis_version": 2,
     }
 
     meta["status"] = "analyzed"

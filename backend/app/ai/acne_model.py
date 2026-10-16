@@ -18,6 +18,7 @@ trained head, so that claim is not relied on here):
 """
 
 import threading
+import math
 
 import numpy as np
 from PIL import Image
@@ -61,5 +62,7 @@ def predict_acne_severity(face_image: np.ndarray) -> tuple[float, float, str]:
     top = predictions[0]
     if top["label"] not in _LABEL_TO_SCORE:
         raise ValueError("Acne checkpoint returned a label outside its documented contract")
+    if not math.isfinite(float(top["score"])) or not 0 <= float(top["score"]) <= 1:
+        raise ValueError("Acne checkpoint returned an invalid probability")
     score = _LABEL_TO_SCORE[top["label"]]
     return score, float(top["score"]), top["label"]

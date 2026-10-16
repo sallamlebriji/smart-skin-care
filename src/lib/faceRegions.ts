@@ -39,6 +39,18 @@ export interface RegionPolygon {
   areaPx: number;
 }
 
+/** Ordered feature contours removed from skin samples, regardless of the segmentation class. */
+export function excludedFeaturePolygons(landmarks: NormalizedLandmark[], width: number, height: number): Point[][] {
+  const contours = [
+    [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246],
+    [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466],
+    [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185],
+    [70, 63, 105, 66, 107, 55, 65, 52, 53, 46],
+    [336, 296, 334, 293, 300, 276, 283, 282, 295, 285],
+  ];
+  return contours.map(contour => contour.map(i => ({ x: landmarks[i].x * width, y: landmarks[i].y * height })));
+}
+
 /** Forehead's landmark list is already an ordered boundary; every other
  * region is convex-hulled since its indices aren't stored in walk order. */
 export function computeRegionPolygons(

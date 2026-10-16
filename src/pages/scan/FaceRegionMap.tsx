@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { computeRegionPolygons, REGION_COLOR, REGION_LABEL, type RegionId } from "@/lib/faceRegions";
+import { computeRegionPolygons, excludedFeaturePolygons, REGION_COLOR, REGION_LABEL, type RegionId } from "@/lib/faceRegions";
 import { segmentImage } from "@/lib/skinSegmenter";
 import { analyzeRegions, type RegionStats } from "@/lib/regionAnalysis";
 import type { Shot } from "./CameraScan";
@@ -52,7 +52,7 @@ export default function FaceRegionMap({ shot }: { shot: Shot }) {
 
       const polygons = computeRegionPolygons(shot.landmarks!, shot.width, shot.height);
       const segmentation = await segmentImage(img);
-      const results = analyzeRegions(canvas, polygons, segmentation);
+      const results = analyzeRegions(canvas, polygons, segmentation, excludedFeaturePolygons(shot.landmarks!, shot.width, shot.height));
       if (cancelled) return;
 
       const view = canvasRef.current;
@@ -126,7 +126,7 @@ export default function FaceRegionMap({ shot }: { shot: Shot }) {
                   <span style={{ color: "var(--ink-faint)" }}>Not enough visible skin to measure</span>
                 ) : (
                   <span style={{ color: "var(--ink-faint)" }}>
-                    tone {(s.luma * 100).toFixed(0)}% · texture {s.texture < 15 ? "smooth" : s.texture < 45 ? "moderate" : "uneven"}
+                    luminance {(s.luma * 255).toFixed(1)}/255 · variance du Laplacien {s.texture.toFixed(2)}
                   </span>
                 )}
               </div>

@@ -1,20 +1,15 @@
-"""Configured trained ONNX models, with explicitly flagged placeholders otherwise."""
-import hashlib
+"""Trained inference only. Missing checkpoints never produce numeric values."""
 import numpy as np
 from app.ai.acne_model import predict_acne_severity
 from app.ai.base import BaseSkinModel, ModelOutput
 from app.ai.onnx_models import predict_configured
-
-
-def _stable_pseudo_score(seed: str, face_image: np.ndarray) -> float:
-    digest = hashlib.sha256(seed.encode() + face_image.tobytes()[:256]).hexdigest()
-    return int(digest[:4], 16) % 60 + 15
+from app.ai.wrinkle_model import predict_wrinkles
 
 
 class ConfiguredOrMockModel(BaseSkinModel):
     def predict(self, face_image: np.ndarray) -> ModelOutput:
         configured = predict_configured(self.metric_name, face_image)
-        return configured if configured is not None else ModelOutput(self.metric_name, _stable_pseudo_score(self.metric_name, face_image), 0.4, True)
+        return configured if configured is not None else ModelOutput(self.metric_name, None, 0, True)
 
 
 class AcneModel(BaseSkinModel):
@@ -23,8 +18,9 @@ class AcneModel(BaseSkinModel):
         configured = predict_configured(self.metric_name, face_image)
         if configured is not None:
             return configured
-        score, confidence, _label = predict_acne_severity(face_image)
-        return ModelOutput(self.metric_name, score, confidence, False)
+        from app.ai.acne_model import MODEL_ID, MODEL_REVISION
+        score, confidence, label = predict_acne_severity(face_image)
+        return ModelOutput(self.metric_name, score, confidence, False, label, MODEL_ID, MODEL_REVISION)
 
 
 class RednessModel(ConfiguredOrMockModel):
@@ -41,6 +37,18 @@ class TextureModel(ConfiguredOrMockModel):
 
 class WrinkleModel(ConfiguredOrMockModel):
     metric_name = "wrinkles"
+    def predict(self, face_image: np.ndarray) -> ModelOutput:
+        configured = predict_configured(self.metric_name, face_image)
+        if configured is not None:
+            return configured
+        try:
+            result = predict_wrinkles(face_image)
+        except Exception:
+            # A failed optional detector cannot manufacture a score or discard a successful acne result.
+            return ModelOutput(self.metric_name, None, 0, True)
+        probability = result["wrinkle_probability"]
+        confidence = probability if result["label"] == "wrinkle" else 1 - probability
+        return ModelOutput(self.metric_name, None, confidence, False, result["label"], result["model"], result["revision"])
 
 class ScarModel(ConfiguredOrMockModel):
     metric_name = "scars"

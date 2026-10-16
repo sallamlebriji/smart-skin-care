@@ -64,12 +64,15 @@ export interface SkinScanResult {
   quality: ScanQuality;
   skin_type_estimate: SkinTypeEstimate;
   overall_score: number;
-  metrics: SkinMetrics;
+  metrics: Partial<SkinMetrics>;
+  model_assessments?: Partial<Record<keyof SkinMetrics, { label: string; probability: number; source: string; revision: string; experimental: boolean }>>;
+  unavailable_metrics?: Array<keyof SkinMetrics>;
+  analysis_version?: number;
   regions: SkinRegions;
   confidence: number;
-  /** True while any field in `metrics` is still a Phase 1 placeholder, not real inference. */
+  /** Legacy partial-analysis flag. Version 2 never generates placeholder numeric entries. */
   is_mock_result: boolean;
-  /** Which `metrics` keys are placeholders right now — check this, not just `acne`, before trusting a score. */
+  /** Exclude these keys from legacy indices; includes unavailable indicators and binary-only outputs. */
   mock_metrics: Array<keyof SkinMetrics>;
 }
 

@@ -37,7 +37,7 @@ Set `OPENAI_API_KEY` and `OPENAI_MODEL` to enable the optional provider. No exte
 
 ## Analysis limits
 
-The acne classifier is a community checkpoint, not a validated diagnostic model. Seven other indicators are still mocked and named in `mock_metrics`; these do not generate routine steps or enter chat context. The overall score and skin-type estimate remain provisional. Model loading is lazy; `WARM_MODEL_ON_STARTUP=true` optionally warms the model. No test performs a model download or live provider call.
+Acne classification and binary wrinkle presence use pinned community checkpoints, not validated diagnostic models. `model_assessments` reports the predicted labels, their probabilities and source revisions. Missing indicator models produce no score. `unavailable_metrics` lists unavailable specialist outputs; `mock_metrics` remains a legacy exclusion list for old clients and also excludes binary wrinkle presence from severity-index calculations. `metrics` is sparse and contains only actual legacy model indices. The compatibility-only overall index excludes unavailable indicators; it and the fixed skin-type estimate are not physical measurements. Missing indicators cannot drive routines or chat context. Model loading is lazy; `WARM_MODEL_ON_STARTUP=true` optionally warms acne. Unit tests do not download models or call a live provider.
 
 
 ## Optional trained ONNX indicators
@@ -46,7 +46,7 @@ Install `requirements-models.txt` and place licensed trained classification chec
 
 Each entry declares an indicator, `trained: true`, relative `.onnx` file, SHA-256, RGB NCHW float32 input size `[height, width]`, mean/std after scaling to 0–1, `stretch` or `center_crop`, logits or probabilities, and one 0–100 score per class (higher means clearer appearance). Classification confidence is the maximum class probability, not a clinically calibrated confidence. Provenance is an operator declaration; it does not establish training quality or clinical validity. Models must be trusted files. Restart after replacing checkpoints.
 
-A configured model replaces only its indicator's placeholder (or the default acne checkpoint). Invalid configuration or failed inference returns 503 rather than fabricated results. Without a registry the default acne classifier and explicitly simulated indicators retain their existing behavior. No seven additional trained checkpoints or annotated datasets are bundled.
+A configured model replaces only its indicator's unavailable status (or its default community model). Invalid configuration or configured inference failure returns 503 rather than fabricated results. The optional default wrinkle detector may be marked unavailable if it fails while acne analysis succeeds. No seven additional trained checkpoints or validated annotated datasets are bundled. The browser's separate pixel-statistics panel is documented in `../docs/IMAGE_MEASUREMENTS.md`.
 
 The registry tests include an actual ONNX Runtime execution of a small synthetic graph, which only checks integration. Install `onnx` alongside `requirements-models.txt` to run that optional graph test; it is skipped when either package is unavailable. Reference: [ONNX Runtime Python API](https://onnxruntime.ai/docs/api/python/api_summary.html).
 

@@ -55,7 +55,7 @@ class SkinScanResult(BaseModel):
     quality: ScanQuality
     skin_type_estimate: SkinTypeEstimate
     overall_score: float = Field(ge=0, le=100)
-    metrics: SkinMetrics
+    metrics: dict[str, float]  # Sparse: only indices actually produced by an available model.
     regions: dict[str, dict[str, float]] = Field(default_factory=dict)
     confidence: float = Field(ge=0, le=1)
     is_mock_result: bool  # true while any metric below is still a placeholder (Phase 1 stub)

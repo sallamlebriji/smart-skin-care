@@ -5,11 +5,12 @@ import { Link } from "react-router-dom";
 import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { useCamera } from "@/hooks/useCamera";
 import { useFaceScan } from "@/hooks/useFaceScan";
-import { uploadScan, deleteScan, analyzeScan, type UploadedScan } from "@/services/scanService";
+import { uploadScan, deleteScan, analyzeScan, scanImageUrl, type UploadedScan } from "@/services/scanService";
 import type { ScanAngle } from "@/lib/faceQuality";
 import type { SkinScanResult } from "@/types/skin";
 import FaceRegionMap from "./FaceRegionMap";
 import ScanResultPanel from "@/components/scan/ScanResultPanel";
+import FaceRegionExplorer from "@/components/scan/FaceRegionExplorer";
 import demoVideo from "@/assets/videos/hero.mp4";
 
 const ANGLES: ScanAngle[] = ["front", "left", "right"];
@@ -319,7 +320,7 @@ export default function CameraScan({ onBack }: { onBack: () => void }) {
               <p style={{ fontWeight: 700, color: "var(--ink)" }}>All three angles captured and uploaded</p>
               <p style={{ fontSize: 13.5, marginTop: 4 }}>
                 Scan <code>{result.scan_id}</code> is stored privately.
-                {!analysis && " Run analysis below to score it — acne uses a real trained model; other metrics are still placeholders."}
+                {!analysis && " Lancez l’analyse pour obtenir les prédictions des modèles disponibles et les mesures d’image."}
               </p>
 
               {!analysis && (
@@ -344,6 +345,7 @@ export default function CameraScan({ onBack }: { onBack: () => void }) {
                 </div>
               )}
 
+              <FaceRegionExplorer imageUrl={scanImageUrl(result.scan_id, "front")} showMap={false} />
               <div className="flex gap-3 mt-4">
                 <button onClick={restart} className="btn btn-ghost btn-sm">
                   <RotateCcw size={14} /> New scan

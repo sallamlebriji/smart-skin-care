@@ -10,16 +10,18 @@ import FaceRegionExplorer from "@/components/scan/FaceRegionExplorer";
 import { getScan, analyzeScan, analyzeWrinkles, scanImageUrl } from "@/services/scanService";
 import { ApiError } from "@/lib/apiClient";
 import { SAFETY_DISCLAIMER } from "@/content/safety";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function AnalysisPage() {
   const { id } = useParams<{ id: string }>();
+  const { user, loading: sessionLoading } = useAuthStore();
   const queryClient = useQueryClient();
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
   const scanQuery = useQuery({
-    queryKey: ["scan", id],
+    queryKey: ["scan", id, user?.id ?? "guest"],
     queryFn: () => getScan(id!),
-    enabled: !!id,
+    enabled: !!id && !sessionLoading,
     retry: (count, err) => !(err instanceof ApiError && err.status === 404) && count < 1,
   });
 
@@ -71,8 +73,7 @@ export default function AnalysisPage() {
                 <div style={{ borderRadius: "var(--radius-xl)", border: "1px solid var(--line)", background: "#fff", padding: 32, textAlign: "center", maxWidth: 480, margin: "0 auto" }}>
                   <p style={{ fontWeight: 700, marginBottom: 8 }}>This scan hasn't been analyzed yet</p>
                   <p style={{ fontSize: 13.5, color: "var(--ink-faint)", marginBottom: 20 }}>
-                    Runs a real acne-severity model on the front photo. Other indicators are still placeholders — see the
-                    breakdown once it's done.
+                    Analyse la photo avec les modèles disponibles. Les indicateurs sans modèle ne reçoivent aucun score.
                   </p>
                   <button
                     onClick={() => analyzeMutation.mutate()}
@@ -87,6 +88,8 @@ export default function AnalysisPage() {
                   )}
                 </div>
               )}
+
+              <FaceRegionExplorer imageUrl={scanImageUrl(scanQuery.data.scan_id, "front")} />
 
               <section style={{ margin: "24px 0", padding: 24, border: "1px solid var(--line)", borderRadius: 20 }}>
                 <h2>Wrinkle detection · experimental</h2>
@@ -105,7 +108,10 @@ export default function AnalysisPage() {
 
               {scanQuery.data.result && (
                 <div className="flex flex-col gap-6">
-                  <FaceRegionExplorer imageUrl={scanImageUrl(scanQuery.data.scan_id, "front")} />
+                  <button className="btn btn-primary" disabled={analyzeMutation.isPending || wrinkleMutation.isPending} onClick={() => analyzeMutation.mutate()}>
+                    {analyzeMutation.isPending ? "Analyse des modèles en cours…" : "Recalculer avec les modèles disponibles"}
+                  </button>
+                  {analyzeError && <p role="alert">{analyzeError}</p>}
                   <div style={{ maxWidth: 480 }}>
                     <ScanResultPanel result={scanQuery.data.result} />
                   </div>

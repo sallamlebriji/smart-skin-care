@@ -1,9 +1,7 @@
 """
-Adapter interface every per-indicator model implements (spec §11). Phase 1
-ships this contract plus mock adapters (see app/ai/models/) so the
-aggregation pipeline and API shape are real, even though no model is
-trained yet. Swapping a mock for a real PyTorch model later means writing
-one class here — nothing upstream should need to change.
+Adapter interface for trained model predictions and explicit unavailable results.
+Class probabilities and compatibility appearance indices are distinct outputs.
+An absent checkpoint never returns a fabricated numeric score.
 """
 
 from abc import ABC, abstractmethod
@@ -15,9 +13,12 @@ import numpy as np
 @dataclass
 class ModelOutput:
     metric_name: str
-    score: float  # 0-100 estimated appearance score
+    score: float | None  # Legacy appearance index, never supplied for unavailable indicators.
     confidence: float  # 0-1
-    is_mock: bool  # never present mock output as a real production result
+    is_mock: bool  # Legacy adapter flag: True means unavailable, with score=None.
+    label: str | None = None
+    source: str | None = None
+    revision: str | None = None
 
 
 class BaseSkinModel(ABC):
