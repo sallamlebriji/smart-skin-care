@@ -45,7 +45,7 @@ test('concurrent unauthorized requests rotate once and never send cookies', asyn
   assert.equal(saved.at(-1).refreshToken, 'refresh2');
 });
 
-test('logout revokes the rotated token and late responses cannot reopen a session', async () => {
+test('logout revokes the refresh token and late responses cannot reopen a session', async () => {
   let finish;
   const saved = [];
   const api = new MobileApi('https://api.example.com', { save: async value => saved.push(value) }, () => {}, async (url, init) => {
@@ -84,4 +84,47 @@ test('secure storage failure does not expose an authenticated session', async ()
 test('simulated indicators cannot appear in measured comparisons', () => {
   assert.deepEqual(measuredMetrics({ result: { metrics: { acne: 58, wrinkles: 99 }, mock_metrics: ['wrinkles'] } }), { acne: 58 });
   assert.deepEqual(measuredMetrics({}), {});
+});
+
+test('default browser fetch transport does not receive the API object as its context', async () => {
+  const original = global.fetch;
+  global.fetch = function () {
+    'use strict';
+    assert.equal(this, undefined);
+    return Promise.resolve(json(tokens(1)));
+  };
+  try {
+    const api = new MobileApi('https://api.example.com', { save: async () => {} }, () => {});
+    assert.deepEqual(await api.authenticate('login', user.email, 'password'), user);
+  } finally { global.fetch = original; }
+});
+
+test('logout waits for an in-flight refresh and revokes its replacement', async () => {
+  let release;
+  let started;
+  let revoked;
+  const ready = new Promise(resolve => { started = resolve; });
+  const api = new MobileApi('https://api.example.com', { save: async () => {} }, () => {}, async (url, init) => {
+    if (url.endsWith('/login')) return json(tokens(1));
+    if (url.endsWith('/refresh')) {
+      started();
+      await new Promise(resolve => { release = resolve; });
+      return json(tokens(2));
+    }
+    if (url.endsWith('/logout')) {
+      revoked = JSON.parse(init.body).refresh_token;
+      return new Response(null, { status: 204 });
+    }
+    return init.headers.Authorization === 'Bearer access2' ? json({ ok: true }) : json({ detail: 'Expired' }, 401);
+  });
+  await api.authenticate('login', user.email, 'password');
+  const pending = api.request('/scans').catch(error => error);
+  await ready;
+  const closing = api.logout();
+  await assert.rejects(api.request('/profile'), /Signing out/);
+  release();
+  await closing;
+  await pending;
+  assert.equal(revoked, 'refresh2');
+  await assert.rejects(api.request('/scans'), /Session closed/);
 });
